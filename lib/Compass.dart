@@ -9,7 +9,7 @@ class CompassScreen extends StatefulWidget {
 }
 
 class _CompassScreenState extends State<CompassScreen> {
-  double _heading = 0;
+  double _heading = 0; // Compass heading
   StreamSubscription<MagnetometerEvent>? _magnetometerSubscription;
 
   @override
@@ -18,15 +18,19 @@ class _CompassScreenState extends State<CompassScreen> {
     _listenToMagnetometer();
   }
 
-    void _listenToMagnetometer() {
-    // Listen to magnetometer events (x, y, z axes data)
+  void _listenToMagnetometer() {
     _magnetometerSubscription =
         magnetometerEvents.listen((MagnetometerEvent event) {
       final double x = event.x;
       final double y = event.y;
 
       // Calculate the heading in radians, then convert to degrees
-      final double heading = atan2(y, x) * (180 / pi);
+      double heading = atan2(y, x) * (180 / pi);
+
+      // Normalize the heading between 0 and 360 degrees
+      if (heading < 0) {
+        heading += 360;
+      }
 
       setState(() {
         _heading = heading; // Update the heading (degrees)
@@ -36,8 +40,7 @@ class _CompassScreenState extends State<CompassScreen> {
 
   @override
   void dispose() {
-    // Cancel the subscription when the widget is disposed
-    _magnetometerSubscription?.cancel();
+    _magnetometerSubscription?.cancel(); // Cancel the subscription when widget is disposed
     super.dispose();
   }
 
@@ -54,7 +57,7 @@ class _CompassScreenState extends State<CompassScreen> {
           children: [
             // Rotating compass arrow based on heading
             Transform.rotate(
-              angle: (_heading * (pi / 180) * -1), // Convert degrees to radians
+              angle: (_heading * (pi / 180) * -1), // Convert degrees to radians and rotate
               child: const Icon(
                 Icons.navigation, // Compass arrow icon
                 size: 150,
